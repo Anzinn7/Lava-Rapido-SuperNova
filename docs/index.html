@@ -10,12 +10,10 @@
 </head>
 
 <body class="w-full min-h-screen">
-    <!-- Container com background -->
     <div class="relative w-full min-h-screen bg-cover bg-center bg-no-repeat"
         style="background-image: url('./assets/fundo.jpg');">
         <div class="absolute inset-0 bg-black/50"></div>
 
-        <!-- Header -->
         <header
             class="relative z-10 w-full h-24 bg-black flex flex-col md:flex-row items-center justify-between px-4 md:px-8 py-4 gap-4 md:gap-0">
             <div class="flex items-center gap-4">
@@ -23,12 +21,12 @@
                 <h4 class="text-zinc-400 font-extralight text-lg">Lava Rápido - SuperNova</h4>
             </div>
             <button id="btnAbrirAgendamento"
-                class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm md:text-base">Agendar
-                Serviço</button>
+                class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm md:text-base">
+                Agendar Serviço
+            </button>
         </header>
     </div>
 
-    <!-- Overlay Agendamento -->
     <div id="overlayAgendamento"
         class="fixed inset-0 hidden z-50 flex items-center justify-center bg-black/70 p-4 overflow-auto">
         <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
@@ -59,7 +57,6 @@
         </div>
     </div>
 
-    <!-- Overlay PIX -->
     <div id="overlay-pix"
         class="fixed inset-0 hidden z-50 flex items-center justify-center bg-black/70 p-4 overflow-auto">
         <div class="bg-white rounded-xl p-6 flex flex-col items-center w-full max-w-sm relative">
@@ -99,7 +96,7 @@
             };
 
             try {
-                const response = await fetch('http://localhost:3000/agendar', {
+                const response = await fetch('/agendar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dadosAgendamento)
