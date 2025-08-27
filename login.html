@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/output.css">
+</head>
+<body class="w-full h-[100dvh] m-0 p-0">
+    <div id="container" class="w-full h-full">
+        <header class="w-full h-[70px] bg-sky-700"></header>
+
+        <main class="w-full h-full flex flex-col items-center justify-center gap-6 p-4">
+            <h1 class="text-2xl font-bold text-center">Área de Gerenciamento</h1>
+            <div class="w-full max-w-[400px] flex flex-col gap-4">
+                <label for="username" class="font-semibold">Usuário:</label>
+                <input id="username" type="text" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Digite seu usuário">
+
+                <label for="password" class="font-semibold">Senha:</label>
+                <input id="password" type="password" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Digite sua senha">
+
+                <button class="bg-sky-500 w-full hover:bg-sky-700 transition-all rounded-2xl font-semibold text-white p-3 mt-4">
+                    Entrar
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

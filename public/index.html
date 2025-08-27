@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lava Rápido - SuperNova</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+
+<body class="w-full min-h-screen">
+    <!-- Container com background -->
+    <div class="relative w-full min-h-screen bg-cover bg-center bg-no-repeat"
+        style="background-image: url('/assets/fundo.jpg');">
+        <div class="absolute inset-0 bg-black/50"></div>
+
+        <!-- Header -->
+        <header
+            class="relative z-10 w-full h-24 bg-black flex flex-col md:flex-row items-center justify-between px-4 md:px-8 py-4 gap-4 md:gap-0">
+            <div class="flex items-center gap-4">
+                <img src="/assets/logo.jpeg" alt="Logo Lava Rápido" class="w-16 h-16 rounded-3xl">
+                <h4 class="text-zinc-400 font-extralight text-lg">Lava Rápido - SuperNova</h4>
+            </div>
+            <button id="btnAbrirAgendamento"
+                class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm md:text-base">Agendar
+                Serviço</button>
+        </header>
+    </div>
+
+    <!-- Overlay Agendamento -->
+    <div id="overlayAgendamento"
+        class="fixed inset-0 hidden z-50 flex items-center justify-center bg-black/70 p-4 overflow-auto">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md relative">
+            <button onclick="fecharAgendamento()"
+                class="absolute top-2 right-2 text-zinc-500 hover:text-red-500 text-2xl font-bold">&times;</button>
+            <h2 class="text-xl font-bold mb-4 text-center">Agendamento de Serviço</h2>
+            <form id="formServico" class="grid grid-cols-1 gap-4">
+                <input type="text" id="nomeCliente" placeholder="Nome do Cliente" class="border p-2 rounded w-full"
+                    required>
+                <input type="text" id="modelo" placeholder="Modelo do veículo" class="border p-2 rounded w-full"
+                    required>
+                <input type="text" id="placa" placeholder="Placa" class="border p-2 rounded w-full" required>
+                <select id="tipoVeiculo" class="border p-2 rounded w-full" required>
+                    <option value="">Tipo de veículo</option>
+                    <option value="Carro">Carro</option>
+                    <option value="Moto">Moto</option>
+                    <option value="Caminhão">Caminhão</option>
+                </select>
+                <select id="servico" class="border p-2 rounded w-full" required>
+                    <option value="">Selecione o serviço</option>
+                    <option value="Lavagem Simples">Lavagem Simples - R$35</option>
+                    <option value="Lavagem Completa">Lavagem Completa - R$70</option>
+                </select>
+                <button type="submit"
+                    class="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition">Confirmar
+                    Agendamento</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Overlay PIX -->
+    <div id="overlay-pix"
+        class="fixed inset-0 hidden z-50 flex items-center justify-center bg-black/70 p-4 overflow-auto">
+        <div class="bg-white rounded-xl p-6 flex flex-col items-center w-full max-w-sm relative">
+            <button onclick="fecharOverlay()"
+                class="absolute top-2 right-2 text-zinc-500 hover:text-red-500 text-2xl font-bold">&times;</button>
+            <h2 class="text-lg font-bold mb-4 text-center">Pague via PIX</h2>
+            <canvas id="qrcode" class="mb-4 w-64 h-64"></canvas>
+            <textarea id="pixCode" readonly class="w-full h-24 p-2 border rounded text-sm mb-2"></textarea>
+            <button onclick="copiarCodigo()"
+                class="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded mt-1">Copiar código PIX</button>
+        </div>
+    </div>
+
+    <script>
+        const chavePIX = "+5511962817390";
+        const overlayAgendamento = document.getElementById("overlayAgendamento");
+        const btnAbrirAgendamento = document.getElementById("btnAbrirAgendamento");
+
+        btnAbrirAgendamento.addEventListener('click', () => overlayAgendamento.classList.remove('hidden'));
+        function fecharAgendamento() { overlayAgendamento.classList.add('hidden'); }
+
+        const precosServicos = { "Lavagem Simples": 35, "Lavagem Completa": 70 };
+
+        const form = document.getElementById('formServico');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const servicoSelecionado = document.getElementById('servico').value;
+            const valorServico = precosServicos[servicoSelecionado];
+
+            const dadosAgendamento = {
+                nomeCliente: document.getElementById('nomeCliente').value,
+                modelo: document.getElementById('modelo').value,
+                placa: document.getElementById('placa').value,
+                tipoVeiculo: document.getElementById('tipoVeiculo').value,
+                servico: servicoSelecionado,
+                valor: valorServico
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/agendar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dadosAgendamento)
+                });
+                const data = await response.json();
+                alert(data.message);
+                form.reset();
+                fecharAgendamento();
+                gerarQRCode(valorServico);
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao enviar agendamento.');
+            }
+        });
+
+        function crc16(str) {
+            let crc = 0xFFFF;
+            for (let i = 0; i < str.length; i++) {
+                crc ^= str.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    crc = (crc & 0x8000) !== 0 ? (crc << 1) ^ 0x1021 : crc << 1;
+                    crc &= 0xFFFF;
+                }
+            }
+            return crc.toString(16).toUpperCase().padStart(4, "0");
+        }
+
+        function montaTLV(tag, value) { const len = value.length.toString().padStart(2, "0"); return tag + len + value; }
+        function gerarPayload(valor, nomeRecebedor = "LavaRapido", cidade = "SaoPaulo") {
+            const gui = montaTLV("00", "BR.GOV.BCB.PIX");
+            const chave = montaTLV("01", chavePIX);
+            const merchantAccountInfo = montaTLV("26", gui + chave);
+            const payload = montaTLV("00", "01") + merchantAccountInfo + montaTLV("52", "0000") + montaTLV("53", "986") + montaTLV("54", valor.toFixed(2)) + montaTLV("58", "BR") + montaTLV("59", nomeRecebedor) + montaTLV("60", cidade) + montaTLV("62", montaTLV("05", "***"));
+            return payload + crc16(payload + "6304");
+        }
+
+        function gerarQRCode(valor) {
+            const payload = gerarPayload(valor);
+            const qrDiv = document.getElementById("qrcode");
+            const overlay = document.getElementById("overlay-pix");
+            const pixCode = document.getElementById("pixCode");
+            overlay.classList.remove('hidden');
+            pixCode.value = payload;
+            QRCode.toCanvas(qrDiv, payload, function (error) { if (error) console.error(error); });
+        }
+
+        function fecharOverlay() { document.getElementById("overlay-pix").classList.add('hidden'); }
+        function copiarCodigo() {
+            const pixCode = document.getElementById("pixCode");
+            pixCode.select();
+            document.execCommand("copy");
+            alert("Código PIX copiado!");
+        }
+    </script>
+</body>
+
+</html>
